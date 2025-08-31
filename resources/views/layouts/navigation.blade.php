@@ -20,18 +20,17 @@
                 <!-- Master Dropdown -->
                 <div class="hidden sm:flex sm:items-center sm:ms-10 relative" x-data="{ masterOpen: false }">
                     <button @click="masterOpen = !masterOpen" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none transition">
-                        {{ __('Master') }}
+                        {{ __('Master Data') }}
                         <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
-                    <!-- Dropdown Menu -->
                     <div x-show="masterOpen" @click.away="masterOpen = false" class="absolute mt-2 w-48 bg-white border rounded shadow-lg">
                         <x-dropdown-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                            {{ __('Master Product') }}
+                            {{ __('Data Produk') }}
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('uoms.index')" :active="request()->routeIs('uoms.*')">
-                            {{ __('Master UOM') }}
+                            {{ __('Data UOM') }}
                         </x-dropdown-link>
                     </div>
                 </div>
@@ -39,22 +38,26 @@
                 <!-- Sales -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
-                        {{ __('Sales') }}
+                        {{ __('Penjualan') }}
                     </x-nav-link>
                 </div>
 
-                <!-- Report Stock -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Report Stock') }}
-                    </x-nav-link>
-                </div>
-
-                <!-- Report Keuangan -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Report Keuangan') }}
-                    </x-nav-link>
+                <!-- Laporan Dropdown -->
+                <div class="hidden sm:flex sm:items-center sm:ms-10 relative" x-data="{ reportOpen: false }">
+                    <button @click="reportOpen = !reportOpen" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 focus:outline-none transition">
+                        {{ __('Laporan') }}
+                        <svg class="ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div x-show="reportOpen" @click.away="reportOpen = false" class="absolute mt-2 w-48 bg-white border rounded shadow-lg">
+                        <x-dropdown-link :href="route('dashboard')" :active="request()->routeIs('reports.stock')">
+                            {{ __('Laporan Stok') }}
+                        </x-dropdown-link>
+                        <x-dropdown-link :href="route('dashboard')" :active="request()->routeIs('reports.finance')">
+                            {{ __('Laporan Keuangan') }}
+                        </x-dropdown-link>
+                    </div>
                 </div>
             </div>
 
@@ -74,7 +77,7 @@
 
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
+                            {{ __('Profil') }}
                         </x-dropdown-link>
 
                         <!-- Authentication -->
@@ -83,7 +86,7 @@
                             <x-dropdown-link :href="route('logout')"
                                     onclick="event.preventDefault();
                                                 this.closest('form').submit();">
-                                {{ __('Log Out') }}
+                                {{ __('Keluar') }}
                             </x-dropdown-link>
                         </form>
                     </x-slot>
@@ -110,27 +113,33 @@
             </x-responsive-nav-link>
 
             <!-- Responsive Master Menu -->
-            <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
-                {{ __('Master Product') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('uoms.index')" :active="request()->routeIs('uoms.*')">
-                {{ __('Master UOM') }}
-            </x-responsive-nav-link>
+            <div class="border-t border-gray-200 mt-2 pt-2">
+                <div class="text-xs uppercase text-gray-600 px-4 mb-2">Master Data</div>
+                <x-responsive-nav-link :href="route('products.index')" :active="request()->routeIs('products.*')">
+                    {{ __('Data Produk') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('uoms.index')" :active="request()->routeIs('uoms.*')">
+                    {{ __('Data UOM') }}
+                </x-responsive-nav-link>
+            </div>
 
             <!-- Responsive Sales -->
-            <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
-                {{ __('Sales') }}
-            </x-responsive-nav-link>
+            <div class="border-t border-gray-200 mt-2 pt-2">
+                <x-responsive-nav-link :href="route('sales.index')" :active="request()->routeIs('sales.*')">
+                    {{ __('Penjualan') }}
+                </x-responsive-nav-link>
+            </div>
 
-            <!-- Responsive Report Stock -->
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Report Stock') }}
-            </x-responsive-nav-link>
-
-            <!-- Responsive Report Keuangan -->
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Report Keuangan') }}
-            </x-responsive-nav-link>
+            <!-- Responsive Laporan Menu -->
+            <div class="border-t border-gray-200 mt-2 pt-2">
+                <div class="text-xs uppercase text-gray-600 px-4 mb-2">Laporan</div>
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('reports.stock')">
+                    {{ __('Laporan Stok') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('reports.finance')">
+                    {{ __('Laporan Keuangan') }}
+                </x-responsive-nav-link>
+            </div>
         </div>
 
         <!-- Responsive Settings Options -->
@@ -142,7 +151,7 @@
 
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Profile') }}
+                    {{ __('Profil') }}
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
@@ -151,7 +160,7 @@
                     <x-responsive-nav-link :href="route('logout')"
                             onclick="event.preventDefault();
                                         this.closest('form').submit();">
-                        {{ __('Log Out') }}
+                        {{ __('Keluar') }}
                     </x-responsive-nav-link>
                 </form>
             </div>
