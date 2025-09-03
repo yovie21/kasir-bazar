@@ -14,6 +14,6 @@ class Role extends Model
     // Relasi ke user
     public function users()
     {
-        return $this->hasMany(User::class, 'role', 'id');
+        return $this->hasMany(User::class, 'role');
     }
 }

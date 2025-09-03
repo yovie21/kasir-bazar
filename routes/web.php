@@ -6,9 +6,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\UomController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
 
 // Update dashboard route to use view
@@ -16,8 +17,13 @@ Route::get('/dashboard', function() {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
+
+
 Route::middleware('auth')->group(function () {
-    // CRUD Product
+   Route::get('/registeruser', [RegisteredUserController::class, 'create'])
+    ->name('registeruser');
+    Route::post('/registeruser', [RegisteredUserController::class, 'store']) ;   // CRUD Product
     Route::resource('products', ProductController::class);
     
     // Route for UOM prices

@@ -45,10 +45,10 @@ class RegisteredUserController extends Controller
              'role' => $request->role,
         ]);
 
-        event(new Registered($user));
+       // event(new Registered($user));
 
-        Auth::login($user);
+       // Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('dashboard');
     }
 }
