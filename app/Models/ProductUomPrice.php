@@ -11,7 +11,8 @@ class ProductUomPrice extends Model
         'uom_id',
         'price_cents',
         'konv_to_base',
-        'is_base'
+        'is_base',
+        'stock', 
     ];
 
     // Relasi ke Product

@@ -96,6 +96,8 @@
 @section('scripts')
 <!-- Pastikan jQuery loaded -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <script>
 // Test jQuery dan debugging
@@ -113,20 +115,30 @@ let cart = [];
 let isProcessing = false; // Prevent double submission
 
 function updateCart() {
-    console.log('Updating cart:', cart);
     let tbody = $("#cartTable tbody");
     tbody.empty();
     let total = 0;
 
     cart.forEach((item, index) => {
+        let uomOptions = item.uoms.map(u =>
+            `<option value="${u.uom_id}" ${u.uom_id == item.uom_id ? 'selected' : ''}>
+                ${u.uom_name} - Rp ${parseFloat(u.harga).toLocaleString('id-ID')}
+            </option>`
+        ).join("");
+
         let row = `
             <tr>
                 <td>${item.barcode}</td>
                 <td>${item.nama}</td>
-                <td>${item.uom}</td>
+                <td>
+                    <select class="form-select form-select-sm uomSelect" data-index="${index}">
+                        ${uomOptions}
+                    </select>
+                </td>
                 <td>Rp ${parseFloat(item.harga).toLocaleString('id-ID')}</td>
                 <td>
-                    <input type="number" min="1" value="${item.jumlah}" class="form-control form-control-sm qtyInput" data-index="${index}">
+                    <input type="number" min="1" value="${item.jumlah}" 
+                        class="form-control form-control-sm qtyInput" data-index="${index}">
                 </td>
                 <td>Rp ${parseFloat(item.subtotal).toLocaleString('id-ID')}</td>
                 <td><button class="btn btn-danger btn-sm removeItem" data-index="${index}"><i class="bi bi-trash"></i></button></td>
@@ -137,9 +149,23 @@ function updateCart() {
 
     $("#totalBelanja").text('Rp ' + total.toLocaleString('id-ID'));
     $("#totalInput").val(total.toLocaleString('id-ID'));
-    
-    console.log('Cart updated, total:', total);
 }
+
+// Ganti UOM
+$(document).on("change", ".uomSelect", function(){
+    let index = $(this).data("index");
+    let uomId = $(this).val();
+    let selected = cart[index].uoms.find(u => u.uom_id == uomId);
+
+    if (selected) {
+        cart[index].uom_id = selected.uom_id;
+        cart[index].uom = selected.uom_name;
+        cart[index].harga = parseFloat(selected.harga);
+        cart[index].subtotal = cart[index].harga * cart[index].jumlah;
+        updateCart();
+    }
+});
+
 
 // CRITICAL: Scan / Tambah Barang dengan event delegation
 $(document).on('submit', '#formScan', function(e) {
@@ -258,11 +284,34 @@ $(document).on("change", ".qtyInput", function(){
     updateCart();
 });
 
-// Hapus Item
-$(document).on("click", ".removeItem", function(){
+// Hapus Item dengan konfirmasi SweetAlert
+$(document).on("click", ".removeItem", function(e){
+    e.preventDefault();
     let index = $(this).data("index");
-    cart.splice(index, 1);
-    updateCart();
+    let itemName = cart[index].nama;
+
+    Swal.fire({
+        title: 'Hapus Item?',
+        text: `Apakah kamu yakin ingin menghapus "${itemName}" dari keranjang?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            cart.splice(index, 1);
+            updateCart();
+            Swal.fire({
+                icon: 'success',
+                title: 'Terhapus!',
+                text: `"${itemName}" berhasil dihapus dari keranjang.`,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    });
 });
 
 // Checkout
