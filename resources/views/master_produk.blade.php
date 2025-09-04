@@ -191,25 +191,32 @@
                                 <td>{{ $product->barcode }}</td>
                                 <td>{{ $product->sku }}</td>
                                 <td>{{ $product->name }}</td>
-                                <td>{{ $product->uom->uomName ?? '-' }}</td>
+
+                                <!-- Fix UOM null error -->
+                                <td>{{ $product->uom_name }}</td>
+
                                 <td>
-                                    @foreach($product->uomPrices as $uomPrice)
+                                    @forelse($product->uomPrices as $uomPrice)
                                         <div class="mb-2">
                                             <span class="badge bg-light text-dark">
-                                                {{ $uomPrice->uom->uomName }}
+                                                {{ optional($uomPrice->uom)->uomName ?? '-' }}
                                             </span>
                                             <span class="price-badge ms-2">
                                                 Rp {{ number_format($uomPrice->price_cents, 0, ',', '.') }}
                                             </span>
                                             @if($uomPrice->konv_to_base != 1)
                                                 <span class="conversion-badge ms-1">
-                                                    {{ $uomPrice->konv_to_base }}  {{ $product->uom->uomName  }}
+                                                    {{ $uomPrice->konv_to_base }} {{ $product->uom_name }}
                                                 </span>
                                             @endif
                                         </div>
-                                    @endforeach
+                                    @empty
+                                        <span class="text-muted">Belum ada harga</span>
+                                    @endforelse
                                 </td>
+
                                 <td>{{ $product->stock_warehouse }}</td>
+
                                 <td>
                                     <button type="button" class="btn btn-sm btn-warning btnEdit"
                                             data-bs-toggle="modal" 
@@ -223,7 +230,7 @@
                                         <i class="bi bi-pencil"></i> Edit
                                     </button>
                                     <form action="{{ route('products.destroy', $product->id) }}" 
-                                          method="POST" class="d-inline delete-form">
+                                        method="POST" class="d-inline delete-form">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" class="btn btn-sm btn-danger btn-delete">

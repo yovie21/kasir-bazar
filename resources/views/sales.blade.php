@@ -116,3 +116,149 @@
     </div>
 </div>
 @endsection
+@extends('layouts.app')
+
+@section('content')
+<div class="container mt-4">
+    <h2 class="mb-3">🛒 Penjualan Kasir</h2>
+
+    <!-- Input Scan Barcode -->
+    <div class="card p-3 mb-3 shadow-sm">
+        <label for="barcodeInput" class="form-label">Scan / Input Barcode</label>
+        <input type="text" id="barcodeInput" class="form-control form-control-lg" placeholder="Scan barcode di sini...">
+    </div>
+
+    <!-- Tabel Keranjang -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title">Keranjang Belanja</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle" id="cartTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Barcode</th>
+                            <th>Nama Produk</th>
+                            <th>Harga</th>
+                            <th width="100px">Jumlah</th>
+                            <th>Subtotal</th>
+                            <th width="60px">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Total -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <h4>Total: <span class="badge bg-success fs-5">Rp <span id="grandTotal">0</span></span></h4>
+                <button class="btn btn-danger btn-sm" onclick="clearCart()">Kosongkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bayar -->
+    <div class="card p-3 mt-4 shadow-sm">
+        <label for="bayar" class="form-label">Uang Bayar</label>
+        <input type="number" id="bayar" class="form-control form-control-lg mb-3" placeholder="Masukkan uang pembayaran">
+
+        <button class="btn btn-success btn-lg w-100" id="btnCheckout">
+            💾 Simpan & Bayar
+        </button>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+let cart = [];
+
+function renderCart() {
+    let tbody = $("#cartTable tbody");
+    tbody.empty();
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        total += item.subtotal;
+        tbody.append(`
+            <tr>
+                <td>${item.barcode}</td>
+                <td>${item.nama}</td>
+                <td>Rp ${item.harga.toLocaleString()}</td>
+                <td>
+                    <input type="number" min="1" value="${item.jumlah}" 
+                        onchange="updateQty(${index}, this.value)" 
+                        class="form-control form-control-sm text-center">
+                </td>
+                <td>Rp ${item.subtotal.toLocaleString()}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">🗑</button>
+                </td>
+            </tr>
+        `);
+    });
+
+    $("#grandTotal").text(total.toLocaleString());
+}
+
+function updateQty(index, qty) {
+    cart[index].jumlah = parseInt(qty);
+    cart[index].subtotal = cart[index].jumlah * cart[index].harga;
+    renderCart();
+}
+
+function removeItem(index) {
+    cart.splice(index, 1);
+    renderCart();
+}
+
+function clearCart() {
+    cart = [];
+    renderCart();
+}
+
+$("#barcodeInput").keypress(function(e) {
+    if(e.which == 13) {
+        let barcode = $(this).val();
+        $.post("{{ route('penjualan.addItem') }}", { 
+            _token: "{{ csrf_token() }}", 
+            barcode: barcode 
+        }, function(data) {
+            let existing = cart.findIndex(item => item.id === data.id);
+            if (existing >= 0) {
+                cart[existing].jumlah += 1;
+                cart[existing].subtotal = cart[existing].jumlah * cart[existing].harga;
+            } else {
+                cart.push(data);
+            }
+            renderCart();
+            $("#barcodeInput").val('');
+        }).fail(function(xhr){
+            alert(xhr.responseJSON.error);
+        });
+    }
+});
+
+$("#btnCheckout").click(function(){
+    let bayar = $("#bayar").val();
+    if(cart.length === 0){
+        alert("Keranjang masih kosong!");
+        return;
+    }
+    if(bayar == "" || bayar <= 0){
+        alert("Masukkan jumlah uang bayar!");
+        return;
+    }
+
+    $.post("{{ route('penjualan.store') }}", { 
+    _token: "{{ csrf_token() }}", 
+    items: cart,
+    bayar: bayar
+}, function(res) {
+    alert("✅ Transaksi Berhasil!\nKembalian: Rp " + res.kembalian.toLocaleString());
+    cart = [];
+    renderCart();
+    $("#bayar").val('');
+});
+});
+</script>
+@endsection

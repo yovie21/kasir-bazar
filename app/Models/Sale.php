@@ -23,4 +23,9 @@ class Sale extends Model
     {
         return $this->belongsTo(User::class, 'cashier_id');
     }
+
+    public function items()
+    {
+        return $this->hasMany(SalesItem::class, 'sale_id');
+    }
 }
