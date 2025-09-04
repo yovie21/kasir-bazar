@@ -5,6 +5,7 @@ use App\Http\Controllers\SalesController;
 use App\Http\Controllers\UomController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\LaporanController; // ✅ tambahin ini
 
 Route::get('/', function () {
     return view('auth.login');
@@ -29,19 +30,23 @@ Route::middleware('auth')->group(function () {
     // CRUD UOM
     Route::resource('uoms', UomController::class);
 
+    // Kasir
     Route::prefix('kasir')->name('kasir.')->group(function () {
-    Route::get('/', [SalesController::class, 'index'])->name('index');
-    Route::post('/add-item', [SalesController::class, 'addItem'])->name('addItem');
-    Route::post('/checkout', [SalesController::class, 'checkout'])->name('checkout');
-    Route::get('/receipt/{id}', [SalesController::class, 'receipt'])->name('receipt');
-});
+        Route::get('/', [SalesController::class, 'index'])->name('index');
+        Route::post('/add-item', [SalesController::class, 'addItem'])->name('addItem');
+        Route::post('/checkout', [SalesController::class, 'checkout'])->name('checkout');
+        Route::get('/receipt/{id}', [SalesController::class, 'receipt'])->name('receipt');
+    });
 
-    // ✅ CRUD Sales (riwayat transaksi untuk admin)
+    // ✅ Riwayat transaksi untuk admin
     Route::resource('sales', SalesController::class)->except(['create', 'store']);
 
-    // Reports
-    Route::get('/reports/stock', fn() => redirect()->route('dashboard'))->name('reports.stock');
-    Route::get('/reports/finance', fn() => redirect()->route('dashboard'))->name('reports.finance');
+    // ✅ Laporan
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('/transaksi', [LaporanController::class, 'transaksi'])->name('transaksi');
+        Route::get('/stock', fn() => redirect()->route('dashboard'))->name('stock');
+        Route::get('/finance', fn() => redirect()->route('dashboard'))->name('finance');
+    });
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

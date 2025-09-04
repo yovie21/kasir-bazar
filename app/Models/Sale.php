@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace App\Models;
 
@@ -27,5 +27,21 @@ class Sale extends Model
     public function items()
     {
         return $this->hasMany(SalesItem::class, 'sale_id');
+    }
+
+    // ✅ Accessors biar langsung rupiah
+    public function getTotalAttribute()
+    {
+        return $this->total_cents / 100;
+    }
+
+    public function getPaidAttribute()
+    {
+        return $this->paid_cents / 100;
+    }
+
+    public function getChangeAttribute()
+    {
+        return $this->change_cents / 100;
     }
 }

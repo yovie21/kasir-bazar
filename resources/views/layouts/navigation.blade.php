@@ -57,6 +57,9 @@
                         <x-dropdown-link :href="route('dashboard')" :active="request()->routeIs('reports.finance')">
                             {{ __('Laporan Keuangan') }}
                         </x-dropdown-link>
+                        <x-dropdown-link :href="route('laporan.transaksi')" :active="request()->routeIs('laporan.transaksi')">
+                            {{ __('Laporan Transaksi') }}
+                        </x-dropdown-link>
                     </div>
                 </div>
                 <!-- Register -->
@@ -145,6 +148,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('reports.finance')">
                     {{ __('Laporan Keuangan') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('laporan.transaksi')" :active="request()->routeIs('laporan.transaksi')">
+                    {{ __('Laporan Transaksi') }}
                 </x-responsive-nav-link>
             </div>
 

@@ -9,13 +9,14 @@ class SalesItem extends Model
 {
     use HasFactory;
 
-    protected $table = 'sales_item';
+    protected $table = 'sales_item'; // ✅ wajib karena defaultnya Laravel cari 'sales_items'
 
     protected $fillable = [
         'sale_id',
         'product_id',
         'qty',
         'price_cents',
+        'subtotal_cents',
     ];
 
     public function sale()
@@ -28,9 +29,14 @@ class SalesItem extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
-    // subtotal otomatis
+    // accessor subtotal (Rupiah sudah diformat)
     public function getSubtotalAttribute()
     {
-        return $this->qty * ($this->price_cents / 100);
+        return $this->subtotal_cents / 100;
     }
+    public function uom()
+{
+    return $this->belongsTo(Uom::class, 'uom_id', 'uomId');
+}
+
 }
