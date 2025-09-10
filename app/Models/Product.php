@@ -9,46 +9,38 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $table = 'products'; // pastikan sesuai nama tabel
-    protected $primaryKey = 'id';  // default Laravel (kalau bukan, sesuaikan)
+    protected $table = 'products';
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'name',
-        'uomId',           // foreign key ke master uom
+        'uomId',           // foreign key ke master UOM
         'barcode',
         'sku',
         'price_cents',
         'stock_warehouse',
     ];
 
-    /**
-     * Relasi ke UOM (satuan utama)
-     */
+    /** Relasi ke UOM */
     public function uom()
     {
         return $this->belongsTo(Uom::class, 'uomId', 'uomId');
     }
 
-    /**
-     * Relasi ke daftar harga berdasarkan UOM
-     */
+    /** Relasi ke daftar harga berdasarkan UOM */
     public function uomPrices()
     {
         return $this->hasMany(ProductUomPrice::class, 'product_id', 'id');
     }
 
-    /**
-     * Relasi ke harga dasar (base UOM)
-     */
+    /** Relasi ke harga dasar (base UOM) */
     public function baseUomPrice()
     {
         return $this->hasOne(ProductUomPrice::class, 'product_id', 'id')
                     ->where('is_base', true);
     }
 
-    /**
-     * Mendapatkan harga berdasarkan UOM tertentu
-     */
+    /** Mendapatkan harga berdasarkan UOM tertentu */
     public function getPriceByUom($uomId)
     {
         $price = $this->uomPrices()
@@ -58,9 +50,7 @@ class Product extends Model
         return $price ? $price->price_cents : 0;
     }
 
-    /**
-     * Helper: tampilkan nama UOM dengan aman
-     */
+    /** Helper: tampilkan nama UOM */
     public function getUomNameAttribute()
     {
         return $this->uom ? $this->uom->uomName : '-';

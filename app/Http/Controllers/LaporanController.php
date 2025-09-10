@@ -12,8 +12,11 @@ class LaporanController extends Controller
      */
     public function transaksi(Request $request)
     {
-        $query = Sale::with(['items.product.uom', 'items.uom', 'cashier']);
-
+        $query = Sale::with([
+            'items.product.uom', 
+            'items.uom', 
+            'cashier'
+        ]);
 
         // Filter tanggal
         if ($request->filled('start_date')) {

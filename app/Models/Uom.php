@@ -10,7 +10,7 @@ class Uom extends Model
     use HasFactory;
 
     protected $table = 'uoms';
-    protected $primaryKey = 'uomId';   // ✅ bukan "id"
+    protected $primaryKey = 'uomId';   // ✅ konsisten
     public $incrementing = true;
     protected $keyType = 'int';
 
@@ -20,11 +20,15 @@ class Uom extends Model
         'konvPcs',
     ];
 
-    /**
-     * Relasi ke produk (satu UOM bisa dipakai banyak produk)
-     */
+    /** Relasi ke produk (satu UOM bisa dipakai banyak produk) */
     public function products()
     {
         return $this->hasMany(Product::class, 'uomId', 'uomId');
+    }
+
+    /** Relasi ke sales item */
+    public function salesItems()
+    {
+        return $this->hasMany(SalesItem::class, 'uomId', 'uomId');
     }
 }

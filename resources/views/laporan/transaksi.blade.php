@@ -91,7 +91,7 @@
                         <tr>
                             <td>{{ $item->product->name ?? '-' }}</td>
                             <td>{{ $item->qty }}</td>
-                            <td>{{ $item->product->uom->name ?? '-' }}</td>
+                            <td>{{ $item->uom->uomName ?? ($item->product->uom->uomName ?? '-') }}</td>
                             <td>Rp {{ number_format($item->price_cents, 0, ',', '.') }}</td>
                             <td>Rp {{ number_format($item->price_cents * $item->qty, 0, ',', '.') }}</td>
                         </tr>
