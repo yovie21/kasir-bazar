@@ -82,7 +82,9 @@
                     <!-- Bayar -->
                     <div class="col-md-4">
                         <label class="form-label fw-bold">Bayar</label>
-                        <input type="number" id="bayarInput" class="form-control form-control-lg" placeholder="Jumlah Bayar" required>
+                        <input type="text" id="bayarInput" 
+                               class="form-control form-control-lg" 
+                               placeholder="Jumlah Bayar" required>
                     </div>
 
                     <!-- Kembalian -->
@@ -101,10 +103,11 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 
-@section('scripts')
+@section('scripts') 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -116,6 +119,17 @@ $(document).ready(function() {
 let cart = [];
 let isProcessing = false;
 
+/**
+ * Format angka ke Rupiah
+ */
+function formatRupiah(value) {
+    let number = parseFloat(value) || 0;
+    return "Rp " + number.toLocaleString("id-ID");
+}
+
+/**
+ * Update isi keranjang & hitungan total
+ */
 function updateCart() {
     let tbody = $("#cartTable tbody");
     tbody.empty();
@@ -124,7 +138,7 @@ function updateCart() {
     cart.forEach((item, index) => {
         let uomOptions = item.uoms.map(u =>
             `<option value="${u.uom_id}" ${u.uom_id == item.uom_id ? 'selected' : ''}>
-                ${u.uom_name} - Rp ${parseFloat(u.harga).toLocaleString('id-ID')}
+                ${u.uom_name} - ${formatRupiah(u.harga)}
             </option>`
         ).join("");
 
@@ -138,32 +152,40 @@ function updateCart() {
                         ${uomOptions}
                     </select>
                 </td>
-                <td>Rp ${parseFloat(item.harga).toLocaleString('id-ID')}</td>
+                <td>${formatRupiah(item.harga)}</td>
                 <td>
                     <input type="number" min="1" value="${item.jumlah}" 
                         class="form-control form-control-sm qtyInput" data-index="${index}">
                 </td>
-                <td>Rp ${parseFloat(item.subtotal).toLocaleString('id-ID')}</td>
-                <td><button class="btn btn-danger btn-sm removeItem" data-index="${index}"><i class="bi bi-trash"></i></button></td>
+                <td>${formatRupiah(item.subtotal)}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm removeItem" data-index="${index}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
             </tr>`;
         tbody.append(row);
         total += parseFloat(item.subtotal);
     });
 
-    $("#totalBelanja").text('Rp ' + total.toLocaleString('id-ID'));
-    $("#totalInput").val(total.toLocaleString('id-ID'));
+    // Update total
+    $("#totalBelanja").text(formatRupiah(total));
+    $("#totalInput").val(formatRupiah(total));
 
-    // Update kembalian realtime
-    let bayar = parseFloat($("#bayarInput").val()) || 0;
+    // Hitung kembalian realtime
+    let bayar = parseInt($("#bayarInput").val().replace(/\D/g,'')) || 0;
     let kembalian = bayar - total;
+
     if (kembalian < 0) {
-        $("#kembalianInput").val("-Rp " + Math.abs(kembalian).toLocaleString('id-ID'));
+        $("#kembalianInput").val("-" + formatRupiah(Math.abs(kembalian)));
     } else {
-        $("#kembalianInput").val("Rp " + kembalian.toLocaleString('id-ID'));
+        $("#kembalianInput").val(formatRupiah(kembalian));
     }
 }
 
-// Ganti UOM
+/**
+ * Ganti UOM
+ */
 $(document).on("change", ".uomSelect", function(){
     let index = $(this).data("index");
     let uomId = $(this).val();
@@ -178,7 +200,9 @@ $(document).on("change", ".uomSelect", function(){
     }
 });
 
-// Tambah barang (scan)
+/**
+ * Tambah barang (scan)
+ */
 $(document).on('submit', '#formScan', function(e) {
     e.preventDefault();
     let barcode = $("#barcode").val().trim();
@@ -215,7 +239,9 @@ $(document).on('submit', '#formScan', function(e) {
     });
 });
 
-// Qty berubah
+/**
+ * Qty berubah
+ */
 $(document).on("change", ".qtyInput", function(){
     let index = $(this).data("index");
     let qty = parseInt($(this).val()) || 1;
@@ -225,7 +251,9 @@ $(document).on("change", ".qtyInput", function(){
     updateCart();
 });
 
-// Hapus item dengan SweetAlert konfirmasi
+/**
+ * Hapus item dengan SweetAlert konfirmasi
+ */
 $(document).on("click", ".removeItem", function(e){
     e.preventDefault();
     let index = $(this).data("index");
@@ -255,20 +283,39 @@ $(document).on("click", ".removeItem", function(e){
     });
 });
 
-
-// Hitung kembalian realtime saat input bayar
+/**
+ * Hitung kembalian realtime saat input bayar
+ */
 $(document).on("input", "#bayarInput", function(){
+    // Format input ke rupiah saat diketik
+    let raw = $(this).val().replace(/\D/g,'');
+    let formatted = new Intl.NumberFormat('id-ID').format(raw);
+    $(this).val(formatted);
     updateCart();
 });
 
-// Checkout
+/**
+ * Checkout
+ */
 $(document).on('submit', '#formCheckout', function(e){
     e.preventDefault();
-    if (cart.length === 0) { alert("Keranjang kosong!"); return; }
+    if (cart.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Keranjang Kosong', text: 'Tidak ada item di keranjang!' });
+        return;
+    }
 
-    let bayar = parseFloat($("#bayarInput").val()) || 0;
+    let bayar = parseInt($("#bayarInput").val().replace(/\D/g,'')) || 0;
     let total = cart.reduce((s, i) => s + parseFloat(i.subtotal), 0);
-    if (bayar < total) { alert("Uang pembayaran kurang!"); return; }
+
+    if (bayar < total) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Pembayaran Kurang!',
+            text: `Total belanja ${formatRupiah(total)} 
+                   sedangkan uang bayar ${formatRupiah(bayar)}.`
+        });
+        return;
+    }
 
     $.ajax({
         url: "{{ route('kasir.checkout') }}",
@@ -276,18 +323,28 @@ $(document).on('submit', '#formCheckout', function(e){
         data: { _token: "{{ csrf_token() }}", items: cart, bayar: bayar },
         success: function(res) {
             $("#kembalianBox").removeClass("d-none").html(
-                `<strong>Kembalian: Rp ${parseFloat(res.kembalian).toLocaleString('id-ID')}</strong>`
+                `<strong>Kembalian: ${formatRupiah(res.kembalian)}</strong>`
             );
-            $("#kembalianInput").val("Rp " + parseFloat(res.kembalian).toLocaleString('id-ID'));
+            $("#kembalianInput").val(formatRupiah(res.kembalian));
             cart = [];
             updateCart();
             $("#bayarInput").val("");
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Pembayaran Berhasil!',
+                text: `Transaksi selesai. Kembalian ${formatRupiah(res.kembalian)}.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
             if (res.sale_id) window.open("/kasir/receipt/" + res.sale_id, "_blank");
         },
         error: function() {
-            alert('Terjadi kesalahan saat memproses pembayaran');
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat memproses pembayaran.' });
         }
     });
 });
 </script>
 @endsection
+

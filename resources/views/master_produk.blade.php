@@ -144,111 +144,182 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+/* Tambahan khusus tabel */
+    .table-responsive {
+        max-height: 500px;
+    }
+    .table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+    .table tbody tr:nth-child(odd) {
+        background-color: #fafafa;
+    }
+    .table tbody tr:hover {
+        background-color: #f1f5f9;
+        transform: scale(1.01);
+    }
+
+    /* Badge harga UOM */
+    .price-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+    }
+    .price-wrapper .badge {
+        font-size: 0.75rem;
+        padding: 5px 8px;
+        border-radius: 6px;
+    }
+
+    /* Tombol aksi */
+    .btn-group .btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Pagination lebih nyaman di mobile */
+    .pagination {
+        justify-content: center;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+    
 </style>
 @endsection
 
 @section('content')
-<div class="container mt-4">
-    <h2 class="mb-4">Master Products</h2>
+<!-- Header -->
+<div class="container-fluid px-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="fw-bold text-primary mb-0">
+            <i class="bi bi-boxes me-2"></i> Master Produk
+        </h2>
 
-    <!-- Tombol Tambah -->
-    <button id="btnAddProduct" type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#productModal">
-        + Tambah Produk
-    </button>
+        <div class="d-flex gap-2">
+            <!-- Search Form -->
+            <form action="{{ route('products.index') }}" method="GET" class="d-flex">
+                <input type="text" 
+                       name="search" 
+                       class="form-control form-control-sm me-2" 
+                       placeholder="Cari produk..." 
+                       value="{{ request('search') }}">
+                <button type="submit" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
 
-    <!-- Pencarian -->
-    <form method="GET" action="{{ route('products.index') }}" class="mb-3 d-flex">
-        <input type="text" name="search" class="form-control me-2" 
-               placeholder="Cari nama, PLU, barcode, atau UOM..."
-               value="{{ request('search') }}">
-        <button type="submit" class="btn btn-outline-primary me-2">Cari</button>
-        @if(request('search'))
-            <a href="{{ route('products.index') }}" class="btn btn-secondary">Reset</a>
-        @endif
-    </form>
+            <!-- Tombol Tambah -->        
+            <button id="btnAddProduct" type="button"  
+                class="btn btn-sm text-white shadow-sm px-3 py-2"
+                style="background: linear-gradient(45deg, #54a567, #20c997); border-radius: 8px;"
+                data-bs-toggle="modal" data-bs-target="#productModal">
+                <i class="bi bi-plus-circle me-1"></i> Tambah Produk
+            </button>
+        </div>
+    </div>
+</div>
 
-    <!-- Tabel Produk -->
-    <div class="card">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Barcode</th>
-                            <th>PLU</th>
-                            <th>Nama Produk</th>
-                            <th>UOM Base</th>
-                            <th>Harga per UOM</th>
-                            <th>Stok</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($products as $index => $product)
-                            <tr>
-                                <td>{{ $products->firstItem() + $index }}</td>
-                                <td>{{ $product->barcode }}</td>
-                                <td>{{ $product->sku }}</td>
-                                <td>{{ $product->name }}</td>
+<!-- Tabel Produk -->
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center">
+                <thead class="table-light sticky-top">
+                    <tr>
+                        <th>No</th>
+                        <th>Barcode</th>
+                        <th>PLU</th>
+                        <th>Nama Produk</th>
+                        <th>UOM Base</th>
+                        <th>Harga per UOM</th>
+                        <th>Stok</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($products as $index => $product)
+                        <tr class="fade-in">
+                            <td class="fw-bold">{{ $products->firstItem() + $index }}</td>
+                            <td><span class="badge bg-secondary">{{ $product->barcode }}</span></td>
+                            <td>{{ $product->sku }}</td>
+                            <td class="fw-semibold text-start">{{ $product->name }}</td>
+                            <td><span class="badge bg-dark">{{ $product->uom_name }}</span></td>
 
-                                <!-- Fix UOM null error -->
-                                <td>{{ $product->uom_name }}</td>
-
-                                <td>
+                            <!-- Harga per UOM -->
+                            <td class="text-start">
+                                <div class="d-flex flex-column gap-1">
                                     @forelse($product->uomPrices as $uomPrice)
-                                        <div class="mb-2">
-                                            <span class="badge bg-light text-dark">
+                                        <div class="d-flex align-items-center gap-2 p-1 rounded bg-light shadow-sm">
+                                            <!-- UOM -->
+                                            <span class="badge bg-warning text-dark">
                                                 {{ optional($uomPrice->uom)->uomName ?? '-' }}
                                             </span>
-                                            <span class="price-badge ms-2">
+
+                                            <!-- Harga -->
+                                            <span class="badge bg-success">
                                                 Rp {{ number_format($uomPrice->price_cents, 0, ',', '.') }}
                                             </span>
+
+                                            <!-- Konversi -->
                                             @if($uomPrice->konv_to_base != 1)
-                                                <span class="conversion-badge ms-1">
-                                                    {{ $uomPrice->konv_to_base }} {{ $product->uom_name }}
+                                                <span class="badge bg-info text-dark">
+                                                    = {{ $uomPrice->konv_to_base }} {{ $product->uom_name }}
                                                 </span>
                                             @endif
                                         </div>
                                     @empty
-                                        <span class="text-muted">Belum ada harga</span>
+                                        <span class="badge bg-light text-muted">Belum ada harga</span>
                                     @endforelse
-                                </td>
+                                </div>
+                            </td>
 
-                                <td>{{ $product->stock_warehouse }}</td>
+                            <td>
+                                <span class="badge bg-success">{{ $product->stock_warehouse }}</span>
+                            </td>
 
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-warning btnEdit"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#productModal"
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-warning btnEdit"
+                                            data-bs-toggle="modal" data-bs-target="#productModal"
+                                            title="Edit Produk"
                                             data-id="{{ $product->id }}"
                                             data-barcode="{{ $product->barcode }}"
                                             data-sku="{{ $product->sku }}"
                                             data-name="{{ $product->name }}"
                                             data-uomid="{{ $product->uomId }}"
                                             data-stock="{{ $product->stock_warehouse }}">
-                                        <i class="bi bi-pencil"></i> Edit
+                                        <i class="bi bi-pencil"></i>
                                     </button>
                                     <form action="{{ route('products.destroy', $product->id) }}" 
-                                        method="POST" class="d-inline delete-form">
+                                          method="POST" class="d-inline delete-form">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-danger btn-delete">
-                                            <i class="bi bi-trash"></i> Hapus
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger btn-delete"
+                                                title="Hapus Produk">
+                                            <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="text-center">Tidak ada data produk</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            {{ $products->links() }}
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="py-4 text-muted">
+                                <i class="bi bi-inbox fs-3"></i><br>
+                                Tidak ada data produk
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
+        {{ $products->appends(['search' => request('search')])->links() }}
     </div>
 </div>
 
