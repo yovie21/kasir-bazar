@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid mt-3">
+<div class="container-fluid">
     <div class="row">
         <!-- Area Scan Barang -->
         <div class="col-md-4">
@@ -10,109 +10,111 @@
                     <h5 class="mb-0">Scan / Input Barang</h5>
                 </div>
                 <div class="card-body">
-                    <!-- PENTING: Hapus action dan method dari form -->
                     <form id="formScan">
                         @csrf
                         <div class="input-group mb-3">
-                            <input type="text" id="barcode" name="barcode" class="form-control form-control-lg" placeholder="Scan Barcode / Ketik Manual" autofocus autocomplete="off">
+                            <input type="text" id="barcode" name="barcode" 
+                                   class="form-control form-control-lg" 
+                                   placeholder="Scan Barcode / Ketik Manual" autofocus autocomplete="off">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-upc-scan"></i> Tambah
                             </button>
                         </div>
                     </form>
                     <div id="alertBox"></div>
-                    
-                    <!-- Debug info -->
                     <div id="debugInfo" class="mt-2 small text-muted"></div>
                 </div>
             </div>
         </div>
 
         <!-- Area Keranjang -->
-        <div class="col-md-8">
-            <div class="card shadow-lg rounded-3">
+        <div class="col-md-8 d-flex flex-column mb-5">
+            <div class="card shadow-lg rounded-3 flex-grow-1">
                 <div class="card-header bg-dark text-white">
                     <h5 class="mb-0">Keranjang Belanja</h5>
                 </div>
-                <div class="card-body table-responsive">
-                    <table class="table table-hover table-bordered align-middle" id="cartTable">
-                        <thead class="table-secondary">
-                            <tr>
-                                <th>Barcode</th>
-                                <th>Nama</th>
-                                <th>UOM</th>
-                                <th>Harga</th>
-                                <th>Qty</th>
-                                <th>Subtotal</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                        <tfoot>
-                            <tr>
-                                <th colspan="5" class="text-end">Total</th>
-                                <th id="totalBelanja">0</th>
-                                <th></th>
-                            </tr>
-                        </tfoot>
-                    </table>
+                <div class="card-body d-flex flex-column p-0">
+                    <!-- Scrollable Table -->
+                    <div class="table-responsive" style="max-height: 220px; overflow-y: auto;">
+                        <table class="table table-hover table-bordered align-middle mb-0" id="cartTable">
+                            <thead class="table-secondary sticky-top bg-light">
+                                <tr>
+                                    <th>No</th>
+                                    <th>Barcode</th>
+                                    <th>Nama</th>
+                                    <th>UOM</th>
+                                    <th>Harga</th>
+                                    <th>Qty</th>
+                                    <th>Subtotal</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- FIXED footer total belanja -->
+                <div class="card-footer bg-dark text-white d-flex justify-content-between">
+                    <strong>Total</strong>
+                    <span id="totalBelanja">Rp 0</span>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Area Pembayaran -->
-            <div class="card shadow-lg rounded-3 mt-3">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Pembayaran</h5>
-                </div>
-                <div class="card-body">
-                    <form id="formCheckout">
-                        @csrf
-                        <div class="row mb-3">
-                            <label class="col-md-2 col-form-label">Total</label>
-                            <div class="col-md-4">
-                                <input type="text" id="totalInput" class="form-control form-control-lg" readonly>
-                            </div>
-                            <label class="col-md-2 col-form-label">Bayar</label>
-                            <div class="col-md-4">
-                                <input type="number" id="bayarInput" class="form-control form-control-lg" placeholder="Jumlah Bayar" required>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <button type="submit" class="btn btn-lg btn-success">
-                                <i class="bi bi-cash-stack"></i> Proses Pembayaran
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+<!-- Area Pembayaran -->
+<div class="container-fluid mb-5"> 
+    <div id="paymentBox" class="card shadow-lg">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Pembayaran</h5>
+        </div>
+        <div class="card-body">
+            <form id="formCheckout">
+                @csrf
+                <div class="row mb-3 align-items-center">
+                    <!-- Total -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Total</label>
+                        <input type="text" id="totalInput" class="form-control form-control-lg" readonly>
+                    </div>
 
-            <!-- Info Kembalian -->
-            <div id="kembalianBox" class="alert alert-info mt-3 d-none"></div>
+                    <!-- Bayar -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Bayar</label>
+                        <input type="number" id="bayarInput" class="form-control form-control-lg" placeholder="Jumlah Bayar" required>
+                    </div>
+
+                    <!-- Kembalian -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Kembalian</label>
+                        <input type="text" id="kembalianInput" class="form-control form-control-lg" readonly>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-lg btn-success">
+                        <i class="bi bi-cash-stack"></i> Proses Pembayaran
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 @endsection
 
+
 @section('scripts')
-<!-- Pastikan jQuery loaded -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-
 <script>
-// Test jQuery dan debugging
 $(document).ready(function() {
-    console.log('=== KASIR PAGE LOADED ===');
-    console.log('jQuery version:', $.fn.jquery);
-    console.log('Form exists:', $('#formScan').length > 0);
-    console.log('Barcode input exists:', $('#barcode').length > 0);
-    
-    // Update debug info
     $('#debugInfo').html('jQuery: ' + $.fn.jquery + ' | Form: ' + ($('#formScan').length > 0 ? 'OK' : 'ERROR'));
 });
 
 let cart = [];
-let isProcessing = false; // Prevent double submission
+let isProcessing = false;
 
 function updateCart() {
     let tbody = $("#cartTable tbody");
@@ -128,6 +130,7 @@ function updateCart() {
 
         let row = `
             <tr>
+                <td>${index + 1}</td>
                 <td>${item.barcode}</td>
                 <td>${item.nama}</td>
                 <td>
@@ -149,6 +152,15 @@ function updateCart() {
 
     $("#totalBelanja").text('Rp ' + total.toLocaleString('id-ID'));
     $("#totalInput").val(total.toLocaleString('id-ID'));
+
+    // Update kembalian realtime
+    let bayar = parseFloat($("#bayarInput").val()) || 0;
+    let kembalian = bayar - total;
+    if (kembalian < 0) {
+        $("#kembalianInput").val("-Rp " + Math.abs(kembalian).toLocaleString('id-ID'));
+    } else {
+        $("#kembalianInput").val("Rp " + kembalian.toLocaleString('id-ID'));
+    }
 }
 
 // Ganti UOM
@@ -166,133 +178,61 @@ $(document).on("change", ".uomSelect", function(){
     }
 });
 
-
-// CRITICAL: Scan / Tambah Barang dengan event delegation
+// Tambah barang (scan)
 $(document).on('submit', '#formScan', function(e) {
     e.preventDefault();
-    console.log('=== FORM SUBMITTED ===');
-    
-    if (isProcessing) {
-        console.log('Already processing, skipping...');
-        return false;
-    }
-    
     let barcode = $("#barcode").val().trim();
-    console.log('Barcode entered:', barcode);
-    
-    if (!barcode) {
-        $("#alertBox").html(`<div class="alert alert-warning">Masukkan barcode terlebih dahulu!</div>`);
-        return false;
-    }
+    if (!barcode) return;
 
     isProcessing = true;
     $("#alertBox").html(`<div class="alert alert-info">Mencari produk...</div>`);
 
-    const ajaxUrl = "{{ route('kasir.addItem') }}";
-    const csrfToken = "{{ csrf_token() }}";
-    
-    console.log('AJAX URL:', ajaxUrl);
-    console.log('CSRF Token:', csrfToken);
-
     $.ajax({
-        url: ajaxUrl,
+        url: "{{ route('kasir.addItem') }}",
         type: "POST",
-        data: {
-            _token: csrfToken,
-            barcode: barcode
-        },
-        timeout: 10000, // 10 second timeout
-        beforeSend: function(xhr) {
-            console.log('AJAX Request starting...');
-        },
-        success: function(res, status, xhr) {
-            console.log('=== AJAX SUCCESS ===');
-            console.log('Response:', res);
-            
-            if (!res || typeof res !== 'object') {
-                throw new Error('Invalid response format');
-            }
-            
-            if (!res.id || !res.barcode || !res.nama || res.harga === undefined) {
-                throw new Error('Missing required fields in response');
-            }
-            
-            // Convert harga to number
+        data: { _token: "{{ csrf_token() }}", barcode: barcode },
+        success: function(res) {
             res.harga = parseFloat(res.harga);
             res.jumlah = parseInt(res.jumlah) || 1;
             res.subtotal = res.harga * res.jumlah;
-            
-            // Check if item already exists
-            let existingItemIndex = cart.findIndex(item => item.barcode === res.barcode);
-            
-            if (existingItemIndex >= 0) {
-                cart[existingItemIndex].jumlah++;
-                cart[existingItemIndex].subtotal = cart[existingItemIndex].jumlah * cart[existingItemIndex].harga;
+
+            let existingIndex = cart.findIndex(i => i.barcode === res.barcode);
+            if (existingIndex >= 0) {
+                cart[existingIndex].jumlah++;
+                cart[existingIndex].subtotal = cart[existingIndex].jumlah * cart[existingIndex].harga;
             } else {
                 cart.push(res);
             }
-            
             updateCart();
             $("#barcode").val("").focus();
-            $("#alertBox").html(`<div class="alert alert-success">Produk "${res.nama}" berhasil ditambahkan!</div>`);
-            
-            setTimeout(function() {
-                $("#alertBox").html("");
-            }, 3000);
+            $("#alertBox").html(`<div class="alert alert-success">Produk "${res.nama}" ditambahkan!</div>`);
+            setTimeout(() => $("#alertBox").html(""), 2000);
         },
-        error: function(xhr, status, error) {
-            console.log('=== AJAX ERROR ===');
-            console.log('XHR:', xhr);
-            console.log('Status:', status);
-            console.log('Error:', error);
-            
-            let errorMsg = 'Terjadi kesalahan';
-            
-            if (xhr.responseJSON && xhr.responseJSON.error) {
-                errorMsg = xhr.responseJSON.error;
-            } else if (xhr.status === 404) {
-                errorMsg = 'Endpoint tidak ditemukan - periksa route!';
-            } else if (xhr.status === 0) {
-                errorMsg = 'Tidak dapat terhubung ke server';
-            } else {
-                errorMsg = `Error ${xhr.status}: ${error}`;
-            }
-            
-            $("#alertBox").html(`<div class="alert alert-danger">${errorMsg}</div>`);
+        error: function() {
+            $("#alertBox").html(`<div class="alert alert-danger">Produk tidak ditemukan!</div>`);
         },
-        complete: function() {
-            isProcessing = false;
-            console.log('AJAX Request completed');
-        }
+        complete: function() { isProcessing = false; }
     });
-    
-    return false; // Prevent default form submission
 });
 
-// Ubah Qty
+// Qty berubah
 $(document).on("change", ".qtyInput", function(){
     let index = $(this).data("index");
     let qty = parseInt($(this).val()) || 1;
-    
-    if (qty < 1) {
-        $(this).val(1);
-        qty = 1;
-    }
-    
+    if (qty < 1) qty = 1;
     cart[index].jumlah = qty;
     cart[index].subtotal = qty * parseFloat(cart[index].harga);
     updateCart();
 });
 
-// Hapus Item dengan konfirmasi SweetAlert
+// Hapus item dengan SweetAlert konfirmasi
 $(document).on("click", ".removeItem", function(e){
     e.preventDefault();
     let index = $(this).data("index");
-    let itemName = cart[index].nama;
 
     Swal.fire({
         title: 'Hapus Item?',
-        text: `Apakah kamu yakin ingin menghapus "${itemName}" dari keranjang?`,
+        text: "Item akan dihapus dari keranjang!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
@@ -303,10 +243,11 @@ $(document).on("click", ".removeItem", function(e){
         if (result.isConfirmed) {
             cart.splice(index, 1);
             updateCart();
+
             Swal.fire({
                 icon: 'success',
                 title: 'Terhapus!',
-                text: `"${itemName}" berhasil dihapus dari keranjang.`,
+                text: 'Item berhasil dihapus dari keranjang.',
                 timer: 1500,
                 showConfirmButton: false
             });
@@ -314,45 +255,36 @@ $(document).on("click", ".removeItem", function(e){
     });
 });
 
+
+// Hitung kembalian realtime saat input bayar
+$(document).on("input", "#bayarInput", function(){
+    updateCart();
+});
+
 // Checkout
 $(document).on('submit', '#formCheckout', function(e){
     e.preventDefault();
-
-    if (cart.length === 0) {
-        alert("Keranjang kosong!");
-        return;
-    }
+    if (cart.length === 0) { alert("Keranjang kosong!"); return; }
 
     let bayar = parseFloat($("#bayarInput").val()) || 0;
-    let total = cart.reduce((sum, item) => sum + parseFloat(item.subtotal), 0);
-
-    if (bayar < total) {
-        alert("Uang pembayaran kurang!");
-        return;
-    }
+    let total = cart.reduce((s, i) => s + parseFloat(i.subtotal), 0);
+    if (bayar < total) { alert("Uang pembayaran kurang!"); return; }
 
     $.ajax({
         url: "{{ route('kasir.checkout') }}",
         type: "POST",
-        data: {
-            _token: "{{ csrf_token() }}",
-            items: cart,
-            bayar: bayar
-        },
+        data: { _token: "{{ csrf_token() }}", items: cart, bayar: bayar },
         success: function(res) {
             $("#kembalianBox").removeClass("d-none").html(
                 `<strong>Kembalian: Rp ${parseFloat(res.kembalian).toLocaleString('id-ID')}</strong>`
             );
+            $("#kembalianInput").val("Rp " + parseFloat(res.kembalian).toLocaleString('id-ID'));
             cart = [];
             updateCart();
             $("#bayarInput").val("");
-            
-            if (res.sale_id) {
-                window.open("/kasir/receipt/" + res.sale_id, "_blank");
-            }
+            if (res.sale_id) window.open("/kasir/receipt/" + res.sale_id, "_blank");
         },
-        error: function(xhr) {
-            console.log('Checkout error:', xhr);
+        error: function() {
             alert('Terjadi kesalahan saat memproses pembayaran');
         }
     });

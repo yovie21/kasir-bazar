@@ -59,7 +59,7 @@
 
         /* Supaya konten tidak ketimpa header/footer */
         main {
-            padding-top: 80px;    /* sesuaikan dengan tinggi header */
+            padding-top: 15px;    /* sesuaikan dengan tinggi header */
             padding-bottom: 120px; /* lebih besar dari tinggi footer (biar pagination aman) */
         }
 
@@ -109,6 +109,20 @@
         .pagination li {
             margin: 2px;
         }
+        /* Tambahin jarak biar konten gak ketutup header */
+        body {
+            padding-top: 70px; /* sesuaikan tinggi navbar kamu */
+        }
+
+        /* Area pembayaran fix di bawah layar */
+        #paymentBox {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1050; /* lebih tinggi dari konten */
+        }
+
 
     </style>
 

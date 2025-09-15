@@ -159,7 +159,7 @@
     <!-- Pencarian -->
     <form method="GET" action="{{ route('products.index') }}" class="mb-3 d-flex">
         <input type="text" name="search" class="form-control me-2" 
-               placeholder="Cari nama, SKU, barcode, atau UOM..."
+               placeholder="Cari nama, PLU, barcode, atau UOM..."
                value="{{ request('search') }}">
         <button type="submit" class="btn btn-outline-primary me-2">Cari</button>
         @if(request('search'))
@@ -176,7 +176,7 @@
                         <tr>
                             <th>No</th>
                             <th>Barcode</th>
-                            <th>SKU</th>
+                            <th>PLU</th>
                             <th>Nama Produk</th>
                             <th>UOM Base</th>
                             <th>Harga per UOM</th>
@@ -280,9 +280,9 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label"><i class="bi bi-tag me-1"></i> SKU</label>
+                                <label class="form-label"><i class="bi bi-tag me-1"></i> PLU</label>
                                 <input type="text" class="form-control rounded-2" name="sku" id="sku" required>
-                                <div class="invalid-feedback">SKU harus diisi</div>
+                                <div class="invalid-feedback">PLU harus diisi</div>
                             </div>
 
                             <div class="mb-3">
