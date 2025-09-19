@@ -137,13 +137,20 @@ function updateCart() {
 
     cart.forEach((item, index) => {
         let uomOptions = item.uoms.map(u =>
-            `<option value="${u.uom_id}" ${u.uom_id == item.uom_id ? 'selected' : ''}>
+            `<option value="${u.uomId}" data-harga="${u.harga}" 
+                ${u.uomId == item.uomId ? 'selected' : ''}>
                 ${u.uom_name} - ${formatRupiah(u.harga)}
             </option>`
         ).join("");
 
+        let selectedUom = item.uoms.find(u => u.uomId == item.uomId);
+        let hargaUom = selectedUom ? selectedUom.harga : item.harga;
+        let subtotal = hargaUom * item.jumlah;
+
+        let highlightClass = item.isNew ? "table-success animate__animated animate__flash" : "";
+
         let row = `
-            <tr>
+            <tr class="${highlightClass}" data-index="${index}">
                 <td>${index + 1}</td>
                 <td>${item.barcode}</td>
                 <td>${item.nama}</td>
@@ -152,28 +159,33 @@ function updateCart() {
                         ${uomOptions}
                     </select>
                 </td>
-                <td>${formatRupiah(item.harga)}</td>
+                <td>${formatRupiah(hargaUom)}</td>
                 <td>
                     <input type="number" min="1" value="${item.jumlah}" 
                         class="form-control form-control-sm qtyInput" data-index="${index}">
                 </td>
-                <td>${formatRupiah(item.subtotal)}</td>
+                <td>${formatRupiah(subtotal)}</td>
                 <td>
                     <button class="btn btn-danger btn-sm removeItem" data-index="${index}">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
             </tr>`;
+
         tbody.append(row);
-        total += parseFloat(item.subtotal);
+
+        item.harga = hargaUom;
+        item.subtotal = subtotal;
+        total += subtotal;
+
+        // Reset flag highlight setelah ditampilkan
+        item.isNew = false;
     });
 
-    // Update total
     $("#totalBelanja").text(formatRupiah(total));
-    $("#totalInput").val(formatRupiah(total));
+    $("#totalInput").val(formatRupiah(total)); // <- fix format di input total
 
-    // Hitung kembalian realtime
-    let bayar = parseInt($("#bayarInput").val().replace(/\D/g,'')) || 0;
+    let bayar = parseInt($("#bayarInput").val().replace(/\D/g, '')) || 0;
     let kembalian = bayar - total;
 
     if (kembalian < 0) {
@@ -183,22 +195,59 @@ function updateCart() {
     }
 }
 
-/**
- * Ganti UOM
- */
-$(document).on("change", ".uomSelect", function(){
-    let index = $(this).data("index");
-    let uomId = $(this).val();
-    let selected = cart[index].uoms.find(u => u.uom_id == uomId);
 
-    if (selected) {
-        cart[index].uom_id = selected.uom_id;
-        cart[index].uom = selected.uom_name;
-        cart[index].harga = parseFloat(selected.harga);
-        cart[index].subtotal = cart[index].harga * cart[index].jumlah;
+/**
+ * Ganti UOM → kalau beda UOM bikin baris baru, bukan overwrite
+ */
+$(document).on("change", ".uomSelect", function () {
+    let index = $(this).data("index");
+    let selectedOption = $(this).find(":selected");
+
+    let item = cart[index];
+    let newUomId = selectedOption.val();
+    let newHarga = parseFloat(selectedOption.data("harga"));
+
+    // Kalau pilih UOM yang sama → cukup update harga/subtotal
+    if (item.uomId == newUomId) {
+        item.harga = newHarga;
+        item.subtotal = item.harga * item.jumlah;
+        updateCart();
+    } else {
+        // Cek apakah kombinasi product + uomId sudah ada di cart
+        let existingIndex = cart.findIndex(c => 
+            c.id === item.id && c.uomId == newUomId
+        );
+
+        if (existingIndex !== -1) {
+            // Kalau sudah ada, gabung qty
+            cart[existingIndex].jumlah += item.jumlah;
+            cart[existingIndex].subtotal = cart[existingIndex].jumlah * cart[existingIndex].harga;
+
+            // Hapus item lama
+            cart.splice(index, 1);
+        } else {
+            // Kalau belum ada, buat baris baru dengan UOM baru
+            cart.push({
+                ...item,
+                uomId: newUomId,
+                harga: newHarga,
+                subtotal: newHarga * item.jumlah,
+                isNew: true // 🔑 tandai baru supaya di-highlight
+            });
+        }
+
         updateCart();
     }
+
+    // 🔑 Scroll + highlight baris terakhir setelah ganti UOM
+    let lastRow = $("#cartTable tbody tr:last");
+    if (lastRow.length) {
+        lastRow[0].scrollIntoView({ behavior: "smooth", block: "center" });
+        lastRow.addClass("table-warning animate__animated animate__flash");
+        setTimeout(() => lastRow.removeClass("animate__flash"), 1500);
+    }
 });
+
 
 /**
  * Tambah barang (scan)
@@ -216,22 +265,51 @@ $(document).on('submit', '#formScan', function(e) {
         type: "POST",
         data: { _token: "{{ csrf_token() }}", barcode: barcode },
         success: function(res) {
+            // --- Normalisasi response agar konsisten camelCase ---
             res.harga = parseFloat(res.harga);
             res.jumlah = parseInt(res.jumlah) || 1;
             res.subtotal = res.harga * res.jumlah;
 
+            // Ubah uom_id -> uomId
+            if (res.uom_id && !res.uomId) {
+                res.uomId = res.uom_id;
+                delete res.uom_id;
+            }
+
+            // Ubah array uoms
+            if (res.uoms) {
+                res.uoms = res.uoms.map(u => ({
+                    ...u,
+                    uomId: u.uom_id,
+                    uom_name: u.uom_name,
+                    harga: u.harga
+                }));
+            }
+
+            // Tambah ke cart
             let existingIndex = cart.findIndex(i => i.barcode === res.barcode);
             if (existingIndex >= 0) {
                 cart[existingIndex].jumlah++;
                 cart[existingIndex].subtotal = cart[existingIndex].jumlah * cart[existingIndex].harga;
             } else {
+                res.isNew = true;   // 🔑 tandai sebagai item baru
                 cart.push(res);
             }
+
             updateCart();
+
+            // 🔑 Scroll otomatis ke item terakhir + highlight
+            let lastRow = $("#cartTable tbody tr:last");
+            if (lastRow.length) {
+                lastRow[0].scrollIntoView({ behavior: "smooth", block: "center" });
+                lastRow.addClass("table-success animate__animated animate__flash");
+                setTimeout(() => lastRow.removeClass("animate__flash"), 1500);
+            }
+
             $("#barcode").val("").focus();
             $("#alertBox").html(`<div class="alert alert-success">Produk "${res.nama}" ditambahkan!</div>`);
             setTimeout(() => $("#alertBox").html(""), 2000);
-        },
+        },  
         error: function() {
             $("#alertBox").html(`<div class="alert alert-danger">Produk tidak ditemukan!</div>`);
         },
@@ -242,12 +320,10 @@ $(document).on('submit', '#formScan', function(e) {
 /**
  * Qty berubah
  */
-$(document).on("change", ".qtyInput", function(){
+$(document).on("input", ".qtyInput", function () {
     let index = $(this).data("index");
-    let qty = parseInt($(this).val()) || 1;
-    if (qty < 1) qty = 1;
-    cart[index].jumlah = qty;
-    cart[index].subtotal = qty * parseFloat(cart[index].harga);
+    cart[index].jumlah = parseInt($(this).val()) || 1;
+    cart[index].subtotal = cart[index].harga * cart[index].jumlah;
     updateCart();
 });
 
@@ -317,10 +393,21 @@ $(document).on('submit', '#formCheckout', function(e){
         return;
     }
 
+    // 🔑 Pastikan semua item yang dikirim hanya punya uomId (tanpa uom_id)
+    let payloadItems = cart.map(i => ({
+        id: i.id,
+        barcode: i.barcode,
+        nama: i.nama,
+        uomId: i.uomId,
+        jumlah: i.jumlah,
+        harga: i.harga,
+        subtotal: i.subtotal
+    }));
+
     $.ajax({
         url: "{{ route('kasir.checkout') }}",
         type: "POST",
-        data: { _token: "{{ csrf_token() }}", items: cart, bayar: bayar },
+        data: { _token: "{{ csrf_token() }}", items: payloadItems, bayar: bayar },
         success: function(res) {
             $("#kembalianBox").removeClass("d-none").html(
                 `<strong>Kembalian: ${formatRupiah(res.kembalian)}</strong>`
@@ -347,4 +434,3 @@ $(document).on('submit', '#formCheckout', function(e){
 });
 </script>
 @endsection
-

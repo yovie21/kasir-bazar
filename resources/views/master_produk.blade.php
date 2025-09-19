@@ -215,7 +215,7 @@
             <!-- Tombol Tambah -->        
             <button id="btnAddProduct" type="button"  
                 class="btn btn-sm text-white shadow-sm px-3 py-2"
-                style="background: linear-gradient(45deg, #54a567, #20c997); border-radius: 8px;"
+                style="background: linear-gradient(45deg, #8b83d3, #20c997); border-radius: 8px;"
                 data-bs-toggle="modal" data-bs-target="#productModal">
                 <i class="bi bi-plus-circle me-1"></i> Tambah Produk
             </button>

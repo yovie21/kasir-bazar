@@ -79,7 +79,7 @@ public function checkout(Request $request)
         $subtotal += $item['harga'] * $item['jumlah'];
     }
 
-    $total = $subtotal;
+    $total   = $subtotal;
     $kembali = $bayar - $total;
 
     if ($kembali < 0) {
@@ -97,43 +97,44 @@ public function checkout(Request $request)
     ]);
 
     foreach ($items as $item) {
-    // Simpan item ke tabel sales_items
-    SalesItem::create([
-        'sale_id'     => $sale->id,
-        'product_id'  => $item['id'],
-        'uom_id'      => $item['uom_id'],
-        'qty'         => $item['jumlah'],
-        'price_cents' => $item['harga'],
-    ]);
+        // Simpan item ke tabel sales_items
+        SalesItem::create([
+            'sale_id'       => $sale->id,
+            'product_id'    => $item['id'],
+            'uomId'         => $item['uomId'], // ✅ konsisten camelCase
+            'qty'           => $item['jumlah'],
+            'price_cents'   => $item['harga'],
+            'subtotal_cents'=> $item['harga'] * $item['jumlah'],
+        ]);
 
-    // Cari konversi UOM
-    $uomPrice = \App\Models\ProductUomPrice::where('product_id', $item['id'])
-        ->where('uom_id', $item['uom_id'])
-        ->first();
-
-    if ($uomPrice) {
-        // Hitung qty dalam base UOM
-        $qtyBase = $item['jumlah'] * $uomPrice->konv_to_base;
-
-        // Kurangi stok UOM yang dipakai
-        $uomPrice->decrement('stock', $item['jumlah']);
-
-        // Kurangi stok pada base UOM
-        $baseUomPrice = \App\Models\ProductUomPrice::where('product_id', $item['id'])
-            ->where('is_base', 1)
+        // Cari konversi UOM
+        $uomPrice = \App\Models\ProductUomPrice::where('product_id', $item['id'])
+            ->where('uom_id', $item['uomId']) // ✅ pakai uomId
             ->first();
 
-        if ($baseUomPrice) {
-            $baseUomPrice->decrement('stock', $qtyBase);
-        }
+        if ($uomPrice) {
+            // Hitung qty dalam base UOM
+            $qtyBase = $item['jumlah'] * $uomPrice->konv_to_base;
 
-        // Update stok di master product supaya sinkron
-        $product = Product::find($item['id']);
-        if ($product) {
-            $product->decrement('stock_warehouse', $qtyBase);
+            // Kurangi stok UOM yang dipakai
+            $uomPrice->decrement('stock', $item['jumlah']);
+
+            // Kurangi stok pada base UOM
+            $baseUomPrice = \App\Models\ProductUomPrice::where('product_id', $item['id'])
+                ->where('is_base', 1)
+                ->first();
+
+            if ($baseUomPrice) {
+                $baseUomPrice->decrement('stock', $qtyBase);
+            }
+
+            // Update stok di master product supaya sinkron
+            $product = Product::find($item['id']);
+            if ($product) {
+                $product->decrement('stock_warehouse', $qtyBase);
+            }
         }
     }
-}
 
     return response()->json([
         'success'   => true,
@@ -141,7 +142,6 @@ public function checkout(Request $request)
         'kembalian' => $kembali,
     ]);
 }
-
 
     /**
      * Cetak struk
