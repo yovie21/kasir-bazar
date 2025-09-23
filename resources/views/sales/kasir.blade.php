@@ -230,10 +230,12 @@ $(document).on("change", ".uomSelect", function () {
             cart.push({
                 ...item,
                 uomId: newUomId,
+                jumlah: 1,               // 🔑 reset qty ke 1
                 harga: newHarga,
-                subtotal: newHarga * item.jumlah,
-                isNew: true // 🔑 tandai baru supaya di-highlight
+                subtotal: newHarga * 1,
+                isNew: true
             });
+
         }
 
         updateCart();
@@ -320,12 +322,25 @@ $(document).on('submit', '#formScan', function(e) {
 /**
  * Qty berubah
  */
-$(document).on("input", ".qtyInput", function () {
+// Biarkan user ketik bebas → update pas blur atau enter
+$(document).on("keydown", ".qtyInput", function (e) {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        $(this).blur(); // trigger blur untuk simpan qty
+    }
+});
+
+$(document).on("blur", ".qtyInput", function () {
     let index = $(this).data("index");
-    cart[index].jumlah = parseInt($(this).val()) || 1;
+    let val = parseInt($(this).val());
+
+    if (isNaN(val) || val < 1) val = 1; // default minimal 1
+
+    cart[index].jumlah = val;
     cart[index].subtotal = cart[index].harga * cart[index].jumlah;
     updateCart();
 });
+
 
 /**
  * Hapus item dengan SweetAlert konfirmasi
@@ -371,6 +386,32 @@ $(document).on("input", "#bayarInput", function(){
 });
 
 /**
+ * Helper format rupiah
+ */
+function formatRupiah(angka) {
+    if (!angka) return "Rp 0";
+    angka = angka.toString().replace(/\D/g, "");
+    return "Rp " + new Intl.NumberFormat("id-ID").format(angka);
+}
+
+/**
+ * Event input & blur untuk kolom Bayar
+ */
+$(document).on("input", "#bayarInput", function () {
+    let raw = $(this).val().replace(/\D/g, "");
+    $(this).val(formatRupiah(raw));
+});
+$(document).on("blur", "#bayarInput", function () {
+    let raw = $(this).val().replace(/\D/g, "");
+    if (raw) {
+        $(this).val(formatRupiah(raw));
+    } else {
+        $(this).val("");
+    }
+});
+
+
+/**
  * Checkout
  */
 $(document).on('submit', '#formCheckout', function(e){
@@ -409,24 +450,30 @@ $(document).on('submit', '#formCheckout', function(e){
         type: "POST",
         data: { _token: "{{ csrf_token() }}", items: payloadItems, bayar: bayar },
         success: function(res) {
-            $("#kembalianBox").removeClass("d-none").html(
-                `<strong>Kembalian: ${formatRupiah(res.kembalian)}</strong>`
-            );
-            $("#kembalianInput").val(formatRupiah(res.kembalian));
-            cart = [];
-            updateCart();
-            $("#bayarInput").val("");
+                $("#kembalianBox").removeClass("d-none").html(
+                    `<strong>Kembalian: ${formatRupiah(res.kembalian)}</strong>`
+                );
+                $("#kembalianInput").val(formatRupiah(res.kembalian));
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Pembayaran Berhasil!',
-                text: `Transaksi selesai. Kembalian ${formatRupiah(res.kembalian)}.`,
-                timer: 2000,
-                showConfirmButton: false
-            });
+                // 🔑 clear cart & input setelah transaksi
+                cart = [];
+                updateCart();
+                $("#bayarInput").val("");
+                $("#kembalianInput").val("");   // <- clear kembalian juga
+                $("#totalInput").val("Rp 0");   // <- reset total input
+                $("#totalBelanja").text("Rp 0");
 
-            if (res.sale_id) window.open("/kasir/receipt/" + res.sale_id, "_blank");
-        },
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pembayaran Berhasil!',
+                    text: `Transaksi selesai. Kembalian ${formatRupiah(res.kembalian)}.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                if (res.sale_id) window.open("/kasir/receipt/" + res.sale_id, "_blank");
+            },
+
         error: function() {
             Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat memproses pembayaran.' });
         }

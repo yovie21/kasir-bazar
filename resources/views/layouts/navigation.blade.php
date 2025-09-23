@@ -51,10 +51,10 @@
                         </svg>
                     </button>
                     <div x-show="reportOpen" @click.away="reportOpen = false" class="absolute mt-2 w-48 bg-white border rounded shadow-lg">
-                        <x-dropdown-link :href="route('dashboard')" :active="request()->routeIs('reports.stock')">
+                        <x-dropdown-link :href="route('laporan.stok')" :active="request()->routeIs('reports.stock')">
                             {{ __('Laporan Stok') }}
                         </x-dropdown-link>
-                        <x-dropdown-link :href="route('dashboard')" :active="request()->routeIs('reports.finance')">
+                        <x-dropdown-link :href="route('laporan.keuangan')" :active="request()->routeIs('reports.finance')">
                             {{ __('Laporan Keuangan') }}
                         </x-dropdown-link>
                         <x-dropdown-link :href="route('laporan.transaksi')" :active="request()->routeIs('laporan.transaksi')">

@@ -43,10 +43,11 @@ Route::middleware('auth')->group(function () {
 
     // ✅ Laporan
     Route::prefix('laporan')->name('laporan.')->group(function () {
-        Route::get('/transaksi', [LaporanController::class, 'transaksi'])->name('transaksi');
-        Route::get('/stock', fn() => redirect()->route('dashboard'))->name('stock');
-        Route::get('/finance', fn() => redirect()->route('dashboard'))->name('finance');
-    });
+    Route::get('/transaksi', [LaporanController::class, 'transaksi'])->name('transaksi');
+    Route::get('/stok', [LaporanController::class, 'stok'])->name('stok');       // ✅ benar
+    Route::get('/keuangan', [LaporanController::class, 'keuangan'])->name('keuangan'); // ✅ benar
+});
+
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -27,7 +27,24 @@
 @section('content')
 <div class="container mt-4">
     <h2 class="mb-4 fw-bold">📊 Laporan Transaksi</h2>
-
+    <div class="card p-3 mb-3">
+        <form method="GET" action="{{ route('laporan.transaksi') }}" class="row g-3">
+            <div class="col-md-4">
+                <label for="start_date" class="form-label">Dari Tanggal</label>
+                <input type="date" id="start_date" name="start_date" 
+                    class="form-control" value="{{ request('start_date') }}">
+            </div>
+            <div class="col-md-4">
+                <label for="end_date" class="form-label">Sampai Tanggal</label>
+                <input type="date" id="end_date" name="end_date" 
+                    class="form-control" value="{{ request('end_date') }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Filter</button>
+                <a href="{{ route('laporan.transaksi') }}" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
     <div class="card p-3">
         <div class="table-responsive">
             <table id="salesTable" class="table table-striped table-hover align-middle" style="width:100%">
