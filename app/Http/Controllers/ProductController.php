@@ -8,31 +8,34 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = Product::with('uom');
+   public function index(Request $request)
+{
+    $query = Product::with('uom');
 
-        if ($request->filled('search')) {
-            $search = $request->search;
+    if ($request->filled('search')) {
+        $search = $request->search;
 
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%")
-                  ->orWhere('barcode', 'like', "%{$search}%");
-            })->orWhereHas('uom', function ($q) use ($search) {
-                // gunakan kolom yang benar pada tabel uoms
-                $q->where('uomName', 'like', "%{$search}%");
-            });
-        }
-
-        $products = $query->orderBy('created_at', 'desc')
-                          ->paginate(10)
-                          ->withQueryString();
-
-        $uoms = Uom::orderBy('uomName')->get();
-
-        return view('master_produk', compact('products', 'uoms'));
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('sku', 'like', "%{$search}%")
+              ->orWhere('barcode', 'like', "%{$search}%");
+        })->orWhereHas('uom', function ($q) use ($search) {
+            $q->where('uomName', 'like', "%{$search}%");
+        });
     }
+
+    // ambil parameter per_page dari request, default 10
+    $perPage = $request->input('per_page', 10);
+
+    $products = $query->orderBy('created_at', 'desc')
+                      ->paginate($perPage)
+                      ->appends(['search' => $request->search, 'per_page' => $perPage]);
+
+    $uoms = Uom::orderBy('uomName')->get();
+
+    return view('master_produk', compact('products', 'uoms'));
+}
+
 
     public function store(Request $request)
 {

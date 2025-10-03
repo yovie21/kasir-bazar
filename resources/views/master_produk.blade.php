@@ -2,6 +2,7 @@
 
 @section('styles')
 <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <style>
     /* Existing styles */
     .is-invalid {
@@ -201,16 +202,27 @@
 
         <div class="d-flex gap-2">
             <!-- Search Form -->
-            <form action="{{ route('products.index') }}" method="GET" class="d-flex">
+            <form action="{{ route('products.index') }}" method="GET" class="d-flex align-items-center gap-2">
                 <input type="text" 
-                       name="search" 
-                       class="form-control form-control-sm me-2" 
-                       placeholder="Cari produk..." 
-                       value="{{ request('search') }}">
+                    name="search" 
+                    class="form-control form-control-sm" 
+                    placeholder="Cari produk..." 
+                    value="{{ request('search') }}">
+
+                <!-- Dropdown jumlah data -->
+                <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
+                    @foreach([10,25,50,100] as $size)
+                        <option value="{{ $size }}" {{ request('per_page', 10) == $size ? 'selected' : '' }}>
+                            {{ $size }}
+                        </option>
+                    @endforeach
+                </select>
+
                 <button type="submit" class="btn btn-sm btn-outline-primary">
                     <i class="bi bi-search"></i>
                 </button>
             </form>
+
 
             <!-- Tombol Tambah -->        
             <button id="btnAddProduct" type="button"  
@@ -227,7 +239,7 @@
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-hover align-middle text-center">
+             <table id="productsTable" class="table table-hover align-middle text-center">
                 <thead class="table-light sticky-top">
                     <tr>
                         <th>No</th>
@@ -445,7 +457,26 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{{-- DataTables JS --}}
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script>
+$(document).ready(function() {
+        $('#productsTable').DataTable({
+            paging: false,    // kita pakai pagination Laravel
+            info: false,      // sembunyikan info "Showing x of y"
+            searching: false, // pencarian pakai form di atas
+            ordering: true,   // aktifkan sorting
+            columnDefs: [
+                { orderable: false, targets: [7] } // kolom aksi tidak bisa di-sort
+            ],
+            language: {
+                "emptyTable": "Tidak ada data produk",
+                "zeroRecords": "Tidak ditemukan hasil"
+            }
+        });
+    });
+
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('productForm');
     const methodInput = document.getElementById('form_method');

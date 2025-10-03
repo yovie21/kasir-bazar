@@ -31,24 +31,21 @@ class LaporanController extends Controller
 
         // 🔹 Cari berdasarkan No Transaksi
         if ($request->filled('search')) {
-            $query->where('no_trans', 'like', '%' . $request->search . '%');
-        }
-
-        // 🔹 Urutkan & paginasi
-        $sales = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        // Supaya filter tetap terbawa ke pagination
-        $sales->appends($request->all());
-
-        return view('laporan.transaksi', compact('sales'));
+        $query->where('no_trans', 'like', '%' . $request->search . '%');
     }
-    public function stok(Request $request)
-{
-    // Ambil semua produk dengan stok terakhir
-    $products = \App\Models\Product::with('uom')->orderBy('name')->get();
 
-    return view('laporan.stok', compact('products'));
+    // 🔹 Ambil semua data → biar DataTables handle paginate & search
+    $sales = $query->orderBy('created_at', 'desc')->get();
+
+    return view('laporan.transaksi', compact('sales'));
 }
+    public function stok(Request $request)
+    {
+        // Ambil semua produk dengan stok terakhir
+        $products = \App\Models\Product::with('uom')->orderBy('name')->get();
+
+        return view('laporan.stok', compact('products'));
+    }
 
 public function keuangan(Request $request)
 {

@@ -138,10 +138,11 @@
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
     <script>
-        $(document).ready(function () {
+       $(document).ready(function () {
             $('#salesTable').DataTable({
                 responsive: true,
                 pageLength: 10,
+                lengthMenu: [ [10, 25, 50, 100], [10, 25, 50, 100] ],
                 language: {
                     search: "Cari:",
                     lengthMenu: "Tampilkan _MENU_ data",
@@ -150,7 +151,8 @@
                         next: "➡️",
                         previous: "⬅️"
                     }
-                }
+                },
+                order: [[3, 'desc']] // urut default by tanggal
             });
         });
     </script>
