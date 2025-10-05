@@ -20,5 +20,4 @@ public function run(): void
             ProductSeeder::class,  // Baru produk,
     ]);
 }
-
 }
