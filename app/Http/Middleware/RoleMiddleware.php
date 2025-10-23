@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
@@ -13,19 +14,21 @@ class RoleMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $role): Response
+    // Menggunakan ...$roles untuk menangkap semua parameter role yang diberikan
+    public function handle(Request $request, Closure $next, ...$roles): Response 
     {
-        // Pastikan user sudah login
-        if (!auth()->check()) {
+        // 1. Pastikan user sudah login
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        // Ambil role user (misal role_id = 3 = admin)
-        $userRole = auth()->user()->role->name ?? null;
+        // 2. Ambil role user (diambil langsung dari kolom 'role' di tabel users)
+        $userRole = Auth::user()->role; 
 
-        // Cocokkan role dengan parameter dari route
-        if ($userRole !== $role) {
-            abort(403, 'Unauthorized');
+        // 3. Cocokkan role user dengan daftar roles yang diizinkan
+        // Jika role user TIDAK ADA di dalam daftar $roles, maka tolak akses.
+        if (!in_array($userRole, $roles)) {
+            abort(403, 'Akses Ditolak. Anda tidak memiliki izin untuk mengakses halaman ini.');
         }
 
         return $next($request);
