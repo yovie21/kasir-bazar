@@ -87,17 +87,17 @@ class DashboardController extends Controller
             )
             ->groupBy('products.id', 'products.name')
             ->orderBy('total_quantity', 'desc')
-            ->limit(5)
+            ->limit(10)
             ->get();
 
         $topProductNames = $topProducts->pluck('name');
         $topProductQuantities = $topProducts->pluck('total_quantity');
 
         // ========== PRODUK STOK MENIPIS (< 10) ==========
-        $lowStockProducts = Product::where('stock_warehouse', '<', 10)
+        $lowStockProducts = Product::where('stock_warehouse', '<', 35)
             ->where('stock_warehouse', '>', 0)
             ->orderBy('stock_warehouse', 'asc')
-            ->limit(5)
+            ->limit(20)
             ->get(['id', 'name', 'stock_warehouse']);
 
         // ========== PRODUK STOK HABIS ==========
