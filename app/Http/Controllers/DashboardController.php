@@ -8,6 +8,8 @@ use App\Models\Product;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Exports\SalesExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DashboardController extends Controller
 {
@@ -174,44 +176,15 @@ class DashboardController extends Controller
 
     // ========== EXPORT TO EXCEL (CSV) ==========
     public function exportExcel(Request $request)
-    {
-        $startDate = $request->input('start_date', now()->subDays(6)->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->format('Y-m-d'));
+{
+    $startDate = $request->input('start_date', now()->subDays(6)->format('Y-m-d'));
+    $endDate = $request->input('end_date', now()->format('Y-m-d'));
 
-        $sales = Sale::with(['cashier', 'items.product'])
-            ->whereBetween('created_at', [$startDate, $endDate])
-            ->orderBy('created_at', 'desc')
-            ->get();
+    $fileName = 'sales_detail_report_' . $startDate . '_to_' . $endDate . '.xlsx';
 
-        $filename = 'sales_report_' . $startDate . '_to_' . $endDate . '.csv';
-        
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ];
+    return Excel::download(new SalesExport($startDate, $endDate), $fileName);
+}
 
-        $callback = function() use ($sales) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['No. Transaksi', 'Tanggal', 'Kasir', 'Subtotal', 'Diskon', 'Total', 'Dibayar', 'Kembalian']);
-
-            foreach ($sales as $sale) {
-                fputcsv($file, [
-                    $sale->no_trans,
-                    $sale->created_at->format('d/m/Y H:i'),
-                    $sale->cashier->name ?? '-',
-                    $sale->subtotal_cents,
-                    $sale->discount_cents,
-                    $sale->total_cents,
-                    $sale->paid_cents,
-                    $sale->change_cents,
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
 
     // ========== GET NEW TRANSACTIONS (untuk notifikasi real-time) ==========
     public function getNewTransactions(Request $request)

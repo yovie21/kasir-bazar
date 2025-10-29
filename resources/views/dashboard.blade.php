@@ -367,7 +367,7 @@
         
         <div class="col-12 col-md-6" data-aos="fade-up" data-aos-delay="100">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-gradient-dark text-white border-0">
+                <div class="card-header bg-gradient-info text-white border-0">
                     <h6 class="m-0 fw-bold">
                         <i class="fas fa-info-circle me-2"></i>Ringkasan Sistem
                     </h6>
@@ -795,7 +795,7 @@ body {
     
     .card {
         background: #2d3748;
-        color: #e2e8f0;
+        color: #ffffff;
     }
     
     .text-muted {
