@@ -121,7 +121,7 @@ class DashboardController extends Controller
         $cashierTransactions = $topCashiers->pluck('total_transactions');
 
         // ========== JAM SIBUK (Peak Hours) ==========
-        $peakHours = DB::table('sales')
+        $peakHours = DB::table('sales')         
             ->whereBetween('created_at', [$startDate, $endDate])
             ->select(
                 DB::raw('HOUR(created_at) as hour'),
