@@ -51,4 +51,7 @@ case yang belom ada sistem nya maka saya buat sistem POS berbasis web untuk even
 <img src="pict/Laporan Transaksi.png">
 </p>
 
-
+- Register User MULTI ROLE
+<p align="center">
+<img src="pict/RegisterUser.png">
+</p>
