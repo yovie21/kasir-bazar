@@ -27,6 +27,14 @@ class UserSeeder extends Seeder
             'created_at' => now(),
             'updated_at' => now(),
         ],
+        [
+            'name' => 'Spv Bazar',
+            'email' => 'spv@bazar.com',
+            'password' => bcrypt('password'),
+            'role' => 0, // kasir
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
     ]);
 
     }
