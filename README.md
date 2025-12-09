@@ -5,15 +5,15 @@ case yang belom ada sistem nya maka saya buat sistem POS berbasis web untuk even
 
 - Login
 <p align="center">
-<img src="pict/login.png">
+<img src="pict/Login.png">
 </p>
 
 - Dashboard
 <p align="center">
-<img src="pict/dashboard.png">
+<img src="pict/Dashboard.png">
 </p>
 <p align="center">
-<img src="pict/dashboard1.png">
+<img src="pict/Dashboard1.png">
 </p>
 
 - Master Produk
