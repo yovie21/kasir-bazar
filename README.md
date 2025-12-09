@@ -38,7 +38,7 @@ case yang belom ada sistem nya maka saya buat sistem POS berbasis web untuk even
 
 - Laporan Stok
 <p align="center">
-<img src="pict/LaporanStock.png">
+<img src="pict/LaporanStok.png">
 </p>
 
 - Laporan Keuangan
@@ -48,7 +48,7 @@ case yang belom ada sistem nya maka saya buat sistem POS berbasis web untuk even
 
 - Laporan Transaksi
 <p align="center">
-<img src="pict/LaporanTransaksi.png">
+<img src="pict/Laporan Transaksi.png">
 </p>
 
 
